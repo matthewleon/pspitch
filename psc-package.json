@@ -7,9 +7,11 @@
     ,   "arrays"
     ,   "arraybuffer-types"
     ,   "console"
+    ,   "eff"
     ,   "maybe"
     ,   "node-buffer"
     ,   "node-fs"
     ,   "partial"
+    ,   "strings"
     ]
 }
