@@ -8,6 +8,8 @@
     ,   "arraybuffer-types"
     ,   "console"
     ,   "eff"
+    ,   "enums"
+    ,   "generics-rep"
     ,   "maybe"
     ,   "node-buffer"
     ,   "node-fs"
