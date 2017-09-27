@@ -10,6 +10,7 @@
     ,   "eff"
     ,   "enums"
     ,   "generics-rep"
+    ,   "maps"
     ,   "maybe"
     ,   "node-buffer"
     ,   "node-fs"
