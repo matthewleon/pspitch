@@ -1,15 +1,17 @@
-module Pitch where
+module Pitch (Pitch(..), Note, pitchToNote) where
 
 import Prelude
 
+import Data.Array (unsafeIndex)
 import Data.Array as Array
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..), defaultPred, defaultSucc, fromEnum, toEnum, enumFromTo)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromJust)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Tuple (Tuple(..))
+import Partial.Unsafe (unsafePartial)
 
 data Key = A | As | B | C | Cs | D | Ds | E | F | Fs | G | Gs
 derive instance genericKey :: Generic Key _
@@ -89,15 +91,36 @@ mkNote _    (Octave 8) = Nothing
 mkNote k  o            = Just $ Note k  o
 
 newtype Pitch = Pitch Number
-derive newtype instance showPitch :: Show Pitch
-derive newtype instance eqPitch   :: Eq Pitch
-derive newtype instance ordPitch  :: Ord Pitch
+derive newtype instance showPitch      :: Show Pitch
+derive newtype instance eqPitch        :: Eq Pitch
+derive newtype instance ordPitch       :: Ord Pitch
+derive newtype instance semiringPitch  :: Semiring Pitch
+derive newtype instance ringPitch      :: Ring Pitch
 
 notePitches :: Map Note Pitch
 notePitches = Map.fromFoldable $ Array.zipWith Tuple notes pitches
 
 pitchNotes :: Map Pitch Note
 pitchNotes = Map.fromFoldable $ Array.zipWith Tuple pitches notes
+
+-- TODO: use logn binary search instead of n linear search
+pitchToNote :: Pitch -> Note
+pitchToNote p
+  | p >= unsafeLookup top notePitches    = top
+  | p <= unsafeLookup bottom notePitches = bottom
+  | otherwise                            = go 1 `unsafeLookup` pitchNotes
+      where
+      go i = if p <= index pitches i
+             then
+               if (p - (pitches `index` (i - 1))) <
+                 ((index pitches i) - p)
+               then index pitches $ i - 1
+               else index pitches i
+             else go $ i + 1
+        where index arr i' = unsafePartial $ unsafeIndex arr i'
+
+unsafeLookup :: forall k v. Ord k => k -> Map k v -> v
+unsafeLookup k v = unsafePartial $ fromJust $ Map.lookup k v
 
 notes :: Array Note
 notes = enumFromTo bottom top
