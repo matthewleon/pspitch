@@ -16,19 +16,22 @@ import Node.FS.Sync (readdir, readFile)
 import Node.Buffer (Buffer)
 import Node.Path (FilePath)
 import Partial.Unsafe (unsafePartial)
+import Pitch (Pitch(..), pitchToNote)
 import Prelude
 
 main :: forall eff. Eff ( fs :: FS, exception :: EXCEPTION, console :: CONSOLE | eff) Unit
 main = flip foreachE logPitch =<< A.filter dotwav <$> readdir "octave"
   where
-  logPitch path = log path *> (logShow =<< filePitch ("octave/" <> path))
+  logPitch path = do
+    pitch <- filePitch ("octave/" <> path)
+    log path *> logShow pitch *> logShow (pitchToNote pitch)
   dotwav = test $ unsafeRegex ".+\\.wav$" noFlags
 
-filePitch :: forall eff. FilePath -> Eff ( fs :: FS, exception :: EXCEPTION | eff) Number
+filePitch :: forall eff. FilePath -> Eff ( fs :: FS, exception :: EXCEPTION | eff) Pitch
 filePitch = map bufferPitch <<< readFile
 
-bufferPitch :: Buffer -> Number
-bufferPitch = detectPitchYIN <<< getLeftChan
+bufferPitch :: Buffer -> Pitch
+bufferPitch = Pitch <<< detectPitchYIN <<< getLeftChan
   where getLeftChan b = unsafePartial
                       $ fromJust
                       $ A.head (decodeSync $ fromBuffer b).channelData
