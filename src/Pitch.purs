@@ -1,4 +1,4 @@
-module Pitch (Pitch(..), Note, pitchToNote) where
+module Pitch (Pitch(..), Note, pitchToNote, notePitches, pitchNotes) where
 
 import Prelude
 
@@ -63,8 +63,8 @@ instance boundedEnumNote    :: BoundedEnum Note
     kval As = 10
     kval B  = 11
   toEnum i = do
-    note <- toNote $ i `mod` 12
-    octave <- mkOctave $ i / 12
+    note <- toNote $ (i + 9) `mod` 12
+    octave <- mkOctave $ (i + 9) / 12
     mkNote note octave
     where
     toNote 0  = Just C
