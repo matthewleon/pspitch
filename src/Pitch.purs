@@ -1,4 +1,4 @@
-module Pitch (Pitch(..), Note, pitchToNote, notePitches, pitchNotes) where
+module Pitch (Pitch(..), Note, pitchToNote, noteToPitch) where
 
 import Prelude
 
@@ -118,6 +118,9 @@ pitchToNote p
                else index pitches i
              else go $ i + 1
         where index arr i' = unsafePartial $ unsafeIndex arr i'
+
+noteToPitch :: Note -> Pitch
+noteToPitch = flip unsafeLookup notePitches
 
 unsafeLookup :: forall k v. Ord k => k -> Map k v -> v
 unsafeLookup k v = unsafePartial $ fromJust $ Map.lookup k v
