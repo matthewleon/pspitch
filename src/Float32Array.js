@@ -5,7 +5,7 @@ exports.fromArray = function(xs) {
 };
 
 exports.toArray = function(xs) {
-  return Array.prototype.slice.call(floatarr);
+  return Array.prototype.slice.call(xs);
 };
 
 exports.length = function(float32array) {

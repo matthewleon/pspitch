@@ -1,6 +1,7 @@
 module Test.Main (main) where
 
 import Control.Monad.Eff (Eff)
+import Test.Float32Array (testFloat32Array)
 import Test.Pitch (testPitch)
 import Test.Spec.QuickCheck (QCRunnerEffects)
 import Test.Spec.Reporter.Console (consoleReporter)
@@ -9,4 +10,5 @@ import Prelude
 
 main :: Eff (QCRunnerEffects ()) Unit
 main = run [consoleReporter] do
+  testFloat32Array
   testPitch

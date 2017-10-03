@@ -1,5 +1,7 @@
 module Float32Array (
   module Data.ArrayBuffer.Types
+, fromArray
+, toArray
 , length
 , map
 , reduce
