@@ -7,9 +7,12 @@ module Float32Array (
 , reduce
 , subarray
 , sum
---, mean
+, mean
 ) where
 
+import Data.EuclideanRing ((/))
+import Data.Int (toNumber)
+import Data.Ord ((>))
 import Data.Semiring ((+))
 import Data.ArrayBuffer.Types (Float32Array)
 
@@ -28,3 +31,10 @@ foreign import subarray :: Float32Array -> Int -> Int -> Float32Array
 
 sum :: Float32Array -> Number
 sum xs = reduce xs (+) 0.0
+
+mean :: Float32Array -> Number
+mean xs =
+  let len = length xs
+  in if len > 0
+     then sum xs / toNumber (length xs)
+     else 0.0
