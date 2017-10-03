@@ -1,5 +1,13 @@
 "use strict";
 
+exports.fromArray = function(xs) {
+  return new Float32Array(xs);
+};
+
+exports.toArray = function(xs) {
+  return Array.prototype.slice.call(floatarr);
+};
+
 exports.length = function(float32array) {
   return float32array.length;
 };

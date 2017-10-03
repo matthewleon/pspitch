@@ -11,6 +11,10 @@ module Float32Array (
 import Data.Semiring ((+))
 import Data.ArrayBuffer.Types (Float32Array)
 
+foreign import fromArray :: Array Number -> Float32Array
+
+foreign import toArray :: Float32Array -> Array Number
+
 -- TODO: Number? This could be huge, no?
 foreign import length :: Float32Array -> Int
 
