@@ -19,7 +19,7 @@ import Partial.Unsafe (unsafePartial)
 import Pitch (Pitch(..), pitchToNote)
 import Prelude
 
-main :: forall eff. Eff ( fs :: FS, exception :: EXCEPTION, console :: CONSOLE | eff) Unit
+main :: forall eff. Eff (fs :: FS, exception :: EXCEPTION, console :: CONSOLE | eff) Unit
 main = flip foreachE logPitch =<< A.filter dotwav <$> readdir "octave"
   where
   logPitch path = do
