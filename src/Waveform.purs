@@ -20,6 +20,7 @@ buckets numberOfSamples numberOfBuckets =
   samplesPerBucket = toNumber numberOfSamples / toNumber samplesPerBucket
 -}
 
+{-
 renderToWaveform :: Int -> Int -> Float32Array -> Waveform
 renderToWaveform width height pcmData = range 0 (width - 1) <#> \binIndex ->
   F32A.mean $
@@ -29,3 +30,4 @@ renderToWaveform width height pcmData = range 0 (width - 1) <#> \binIndex ->
     samplesPerBinFloat = toNumber (F32A.length pcmData) / toNumber width
     samplesPerBin      = ceil  samplesPerBinFloat
     binOffset          = floor samplesPerBinFloat
+-}

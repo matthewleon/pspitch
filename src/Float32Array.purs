@@ -5,9 +5,10 @@ module Float32Array (
 , reduce
 , subarray
 , sum
-, mean
+--, mean
 ) where
 
+import Data.Semiring ((+))
 import Data.ArrayBuffer.Types (Float32Array)
 
 -- TODO: Number? This could be huge, no?
@@ -15,6 +16,9 @@ foreign import length :: Float32Array -> Int
 
 foreign import map :: Float32Array -> (Number -> Number) -> Float32Array
 
- foreign import reduce :: Float32Array -> (a -> Number -> a) ->
+foreign import reduce :: forall a. Float32Array -> (a -> Number -> a) -> a -> a
 
 foreign import subarray :: Float32Array -> Int -> Int -> Float32Array
+
+sum :: Float32Array -> Number
+sum xs = reduce xs (+) 0.0
