@@ -25,7 +25,7 @@ main :: forall eff. Eff (fs :: FS, exception :: EXCEPTION, console :: CONSOLE | 
 main = do
   a1 <- readFile "octave/a1.wav"
   let leftChan = getLeftChan a1
-      wavForm = W.toWaveform 80 20 leftChan
+      wavForm = W.toWaveform 160 20 leftChan
   logShow wavForm
   log $ W.toString wavForm
 
