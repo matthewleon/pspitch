@@ -1,7 +1,7 @@
 module Waveform (
   Waveform
 , toWaveform
---, toString
+, toString
 ) where
 
 import Float32Array (Float32Array)
@@ -10,6 +10,7 @@ import Data.Array as Array
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Int (round, toNumber, ceil, floor)
+import Data.String (joinWith, fromCharArray)
 import Math (abs)
 import Prelude
 
@@ -30,7 +31,7 @@ toWaveform :: Int -> Int -> Float32Array -> Waveform
 toWaveform width height pcmData = Waveform histogram height
   where
   histogram = Array.range 0 (width - 1) <#> \binIndex ->
-    round <<< F32A.mean <<< flip F32A.map abs $
+    round <<< (_ * toNumber height) <<< F32A.mean <<< flip F32A.map abs $
       F32A.subarray
         pcmData (binOffset * binIndex) (binOffset * binIndex + samplesPerBin)
     where
@@ -38,7 +39,9 @@ toWaveform width height pcmData = Waveform histogram height
     samplesPerBin      = ceil  samplesPerBinFloat
     binOffset          = floor samplesPerBinFloat
 
-{-
 toString :: Waveform -> String
-toString
--}
+toString (Waveform histogram height) =
+  joinWith "\n" $ Array.range 0 height <#> \heightIndex ->
+    let currentHeight = height - heightIndex
+    in  fromCharArray $ histogram <#> \histEntry ->
+        if histEntry >= currentHeight then '#' else ' '

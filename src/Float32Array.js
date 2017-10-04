@@ -13,7 +13,9 @@ exports.length = function(float32array) {
 };
 
 exports.map = function(float32array) {
-  return float32array.map;
+  return function(f) {
+    return float32array.map(f);
+  };
 };
 
 exports.reduce = function(float32array) {

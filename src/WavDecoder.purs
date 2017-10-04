@@ -1,6 +1,7 @@
 module WavDecoder (AudioData, decodeSync) where
 
-import Data.ArrayBuffer.Types (ArrayBuffer, Float32Array)
+import Data.ArrayBuffer.Types (ArrayBuffer)
+import Float32Array (Float32Array)
 
 type AudioData = {
   sampleRate :: Number
