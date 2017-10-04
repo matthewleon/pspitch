@@ -20,13 +20,6 @@ derive instance eqWaveform :: Eq Waveform
 instance showWaveform :: Show Waveform
   where show = genericShow
 
-{-
-buckets :: Int -> Int -> Array (Tuple Int Int)
-buckets numberOfSamples numberOfBuckets =
-  where
-  samplesPerBucket = toNumber numberOfSamples / toNumber samplesPerBucket
--}
-
 toWaveform :: Int -> Int -> Float32Array -> Waveform
 toWaveform width height pcmData = Waveform histogram height
   where
