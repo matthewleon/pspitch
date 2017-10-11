@@ -1,12 +1,12 @@
 // create the audio context (chrome only for now)
 if (! window.AudioContext) {
-    if (! window.webkitAudioContext) {
-        alert('no audiocontext found');
-    }
-    window.AudioContext = window.webkitAudioContext;
+  if (! window.webkitAudioContext) {
+    alert('no audiocontext found');
+  }
+  window.AudioContext = window.webkitAudioContext;
 }
 
-var context = new AudioContext();
+var context = new OfflineAudioContext(2,44100*40,44100);
 
 var audioBuffer;
 var sourceNode;
@@ -18,16 +18,16 @@ var ctx = $("#canvas").get()[0].getContext("2d");
 
 // create a temp canvas we use for copying
 var tempCanvas = document.createElement("canvas"),
-    tempCtx = tempCanvas.getContext("2d");
+  tempCtx = tempCanvas.getContext("2d");
 tempCanvas.width=800;
 tempCanvas.height=512;
 
 // used for color distribution
 var hot = new chroma.ColorScale({
-    colors:['#000000', '#ff0000', '#ffff00', '#ffffff'],
-    positions:[0, .25, .75, 1],
-    mode:'rgb',
-    limits:[0, 300]
+  colors:['#000000', '#ff0000', '#ffff00', '#ffffff'],
+  positions:[0, .25, .75, 1],
+  mode:'rgb',
+  limits:[0, 300]
 });
 
 // load the sound
@@ -37,48 +37,54 @@ loadSound('scale/c1major.wav');
 
 function setupAudioNodes() {
 
-    // setup a javascript node
-    javascriptNode = context.createScriptProcessor(2048, 1, 1);
-    // connect to destination, else it isn't called
-    javascriptNode.connect(context.destination);
+  // setup a javascript node
+  javascriptNode = context.createScriptProcessor(2048, 1, 1);
+  // connect to destination, else it isn't called
+  javascriptNode.connect(context.destination);
 
 
-    // setup a analyzer
-    analyser = context.createAnalyser();
-    analyser.smoothingTimeConstant = 0;
-    analyser.fftSize = 1024;
+  // setup a analyzer
+  analyser = context.createAnalyser();
+  analyser.smoothingTimeConstant = 0;
+  analyser.fftSize = 1024;
 
-    // create a buffer source node
-    sourceNode = context.createBufferSource();
-    sourceNode.connect(analyser);
-    analyser.connect(javascriptNode);
+  // create a buffer source node
+  sourceNode = context.createBufferSource();
+  sourceNode.connect(analyser);
+  analyser.connect(javascriptNode);
 
-    sourceNode.connect(context.destination);
+  //sourceNode.connect(context.destination);
 }
 
 // load the specified sound
 function loadSound(url) {
-    var request = new XMLHttpRequest();
-    request.open('GET', url, true);
-    request.responseType = 'arraybuffer';
+  var request = new XMLHttpRequest();
+  request.open('GET', url, true);
+  request.responseType = 'arraybuffer';
 
-    // When loaded decode the data
-    request.onload = function () {
-
-        // decode the data
-        context.decodeAudioData(request.response, function (buffer) {
-            // when the audio is decoded play the sound
-            playSound(buffer);
-        }, onError);
-    }
-    request.send();
+  // When loaded decode the data
+  request.onload = function () {
+    console.log('loaded');
+    // decode the data
+    context.decodeAudioData(request.response, function (buffer) {
+      // when the audio is decoded play the sound
+      console.log('decoded audio data');
+      console.info(buffer);
+      playSound(buffer);
+    }, onError);
+  }
+  request.send();
 }
 
 
 function playSound(buffer) {
-    sourceNode.buffer = buffer;
-    sourceNode.start(0);
-    sourceNode.loop = true;
+  console.log('in playSound');
+  sourceNode.buffer = buffer;
+  sourceNode.start(0);
+  context.startRendering().then(function(renderedBuffer) {
+        console.log('Rendering completed successfully');
+  });
+  //sourceNode.loop = true;
 }
 
 // log if an error occurs
