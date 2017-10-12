@@ -6,14 +6,16 @@ if (! window.AudioContext) {
   window.AudioContext = window.webkitAudioContext;
 }
 
-var context = new OfflineAudioContext(2,44100*40,44100);
+var context = new AudioContext();
+var offContext; // declare size once we know how big it should be
+//var offContext = new OfflineAudioContext(2,44100*20,44100);
 
 var audioBuffer;
 var sourceNode;
 var analyser;
 var javascriptNode;
 
-// get the context from the canvas to draw on
+// get the offContext from the canvas to draw on
 var ctx = $("#canvas").get()[0].getContext("2d");
 
 // create a temp canvas we use for copying
@@ -31,29 +33,31 @@ var hot = new chroma.ColorScale({
 });
 
 // load the sound
-setupAudioNodes();
+//setupAudioNodes();
 loadSound('scale/c1major.wav');
 
 
-function setupAudioNodes() {
-
+function setupAudio(buffer) {
+  offContext = new OfflineAudioContext(
+    buffer.numberOfChannels, buffer.length, buffer.sampleRate);
   // setup a javascript node
-  javascriptNode = context.createScriptProcessor(2048, 1, 1);
+  javascriptNode = offContext.createScriptProcessor(2048, 1, 1);
   // connect to destination, else it isn't called
-  javascriptNode.connect(context.destination);
+  javascriptNode.connect(offContext.destination);
+  javascriptNode.onaudioprocess = onAudioProcess;
 
 
   // setup a analyzer
-  analyser = context.createAnalyser();
+  analyser = offContext.createAnalyser();
   analyser.smoothingTimeConstant = 0;
   analyser.fftSize = 1024;
 
   // create a buffer source node
-  sourceNode = context.createBufferSource();
+  sourceNode = offContext.createBufferSource();
   sourceNode.connect(analyser);
   analyser.connect(javascriptNode);
 
-  //sourceNode.connect(context.destination);
+  //sourceNode.connect(offContext.destination);
 }
 
 // load the specified sound
@@ -70,6 +74,7 @@ function loadSound(url) {
       // when the audio is decoded play the sound
       console.log('decoded audio data');
       console.info(buffer);
+      setupAudio(buffer);
       playSound(buffer);
     }, onError);
   }
@@ -81,7 +86,7 @@ function playSound(buffer) {
   console.log('in playSound');
   sourceNode.buffer = buffer;
   sourceNode.start(0);
-  context.startRendering().then(function(renderedBuffer) {
+  offContext.startRendering().then(function(renderedBuffer) {
         console.log('Rendering completed successfully');
   });
   //sourceNode.loop = true;
@@ -95,43 +100,39 @@ function onError(e) {
 // when the javascript node is called
 // we use information from the analyzer node
 // to draw the volume
-javascriptNode.onaudioprocess = function () {
+function onAudioProcess() {
+  // get the average for the first channel
+  var array = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(array);
 
-    // get the average for the first channel
-    var array = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(array);
-
-    // draw the spectrogram
-    if (sourceNode.playbackState == sourceNode.PLAYING_STATE) {
-        drawSpectrogram(array);
-    }
-
-
+  // draw the spectrogram
+  if (sourceNode.playbackState == sourceNode.PLAYING_STATE) {
+    drawSpectrogram(array);
+  }
 }
 
+var spectIndex = 0;
 function drawSpectrogram(array) {
+  // copy the current canvas onto the temp canvas
+  var canvas = document.getElementById("canvas");
 
-    // copy the current canvas onto the temp canvas
-    var canvas = document.getElementById("canvas");
+  tempCtx.drawImage(canvas, 0, 0, 800, 512);
 
-    tempCtx.drawImage(canvas, 0, 0, 800, 512);
+  // iterate over the elements from the array
+  for (var i = 0; i < array.length; i++) {
+    // draw each pixel with the specific color
+    var value = array[i];
+    ctx.fillStyle = hot.getColor(value).hex();
 
-    // iterate over the elements from the array
-    for (var i = 0; i < array.length; i++) {
-        // draw each pixel with the specific color
-        var value = array[i];
-        ctx.fillStyle = hot.getColor(value).hex();
+    ctx.fillRect(spectIndex, 512 - i, 1, 1);
+  }
 
-        // draw the line at the right side of the canvas
-        ctx.fillRect(800 - 1, 512 - i, 1, 1);
-    }
+  // set translate on the canvas
+  //ctx.translate(-1, 0);
+  // draw the copied image
+  ctx.drawImage(tempCanvas, 0, 0, 800, 512, 0, 0, 800, 512);
 
-    // set translate on the canvas
-    ctx.translate(-1, 0);
-    // draw the copied image
-    ctx.drawImage(tempCanvas, 0, 0, 800, 512, 0, 0, 800, 512);
-
-    // reset the transformation matrix
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-
+  // reset the transformation matrix
+  //ctx.setTransform(1, 0, 0, 1, 0, 0);
+  spectIndex = spectIndex + 1;
 }
