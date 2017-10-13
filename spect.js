@@ -15,15 +15,6 @@ var sourceNode;
 var analyser;
 var javascriptNode;
 
-// get the offContext from the canvas to draw on
-var ctx = $("#canvas").get()[0].getContext("2d");
-
-// create a temp canvas we use for copying
-var tempCanvas = document.createElement("canvas"),
-  tempCtx = tempCanvas.getContext("2d");
-tempCanvas.width=800;
-tempCanvas.height=512;
-
 // used for color distribution
 var hot = new chroma.ColorScale({
   colors:['#000000', '#ff0000', '#ffff00', '#ffffff'],
@@ -111,28 +102,20 @@ function onAudioProcess() {
   }
 }
 
+// get the offContext from the canvas to draw on
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
 var spectIndex = 0;
 function drawSpectrogram(array) {
-  // copy the current canvas onto the temp canvas
-  var canvas = document.getElementById("canvas");
-
-  tempCtx.drawImage(canvas, 0, 0, 800, 512);
-
   // iterate over the elements from the array
   for (var i = 0; i < array.length; i++) {
     // draw each pixel with the specific color
     var value = array[i];
     ctx.fillStyle = hot.getColor(value).hex();
-
     ctx.fillRect(spectIndex, 512 - i, 1, 1);
   }
 
-  // set translate on the canvas
-  //ctx.translate(-1, 0);
   // draw the copied image
-  ctx.drawImage(tempCanvas, 0, 0, 800, 512, 0, 0, 800, 512);
-
-  // reset the transformation matrix
-  //ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(canvas, 0, 0, 800, 512, 0, 0, 800, 512);
   spectIndex = spectIndex + 1;
 }
