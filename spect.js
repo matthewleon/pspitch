@@ -83,7 +83,6 @@ function playSound(buffer) {
   offContext.startRendering().then(function(renderedBuffer) {
         console.log('Rendering completed successfully');
   });
-  //sourceNode.loop = true;
 }
 
 // log if an error occurs
@@ -101,6 +100,7 @@ function onAudioProcess() {
 
   // draw the spectrogram
   drawSpectrogram(array);
+  console.log(getHfc(array));
 }
 
 // get the offContext from the canvas to draw on
@@ -118,4 +118,8 @@ function drawSpectrogram(array) {
     ctx.fillRect(spectIndex, height - i, 1, 1);
   }
   spectIndex = spectIndex + 1;
+}
+
+function getHfc(arr) {
+  return arr.reduce((accum, v, i) => accum + v * i, 0);
 }
