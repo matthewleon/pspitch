@@ -8,7 +8,6 @@ if (! window.AudioContext) {
 
 var context = new AudioContext();
 var offContext; // declare size once we know how big it should be
-//var offContext = new OfflineAudioContext(2,44100*20,44100);
 
 var audioBuffer;
 var sourceNode;
@@ -24,9 +23,7 @@ var hot = new chroma.ColorScale({
 });
 
 // load the sound
-//setupAudioNodes();
 loadSound('scale/c1major.wav');
-
 
 function setupAudio(buffer) {
   offContext = new OfflineAudioContext(
@@ -41,7 +38,7 @@ function setupAudio(buffer) {
   // setup a analyzer
   analyser = offContext.createAnalyser();
   analyser.smoothingTimeConstant = 0;
-  analyser.fftSize = 1024;
+  analyser.fftSize = 512;
 
   // create a buffer source node
   sourceNode = offContext.createBufferSource();
@@ -53,6 +50,7 @@ function setupAudio(buffer) {
 
 function setupViz(buffer) {
   canvas.width = Math.ceil(buffer.length / javascriptNode.bufferSize);
+  canvas.height = analyser.frequencyBinCount;
 }
 
 // load the specified sound
@@ -102,9 +100,7 @@ function onAudioProcess() {
   analyser.getByteFrequencyData(array);
 
   // draw the spectrogram
-  if (sourceNode.playbackState == sourceNode.PLAYING_STATE) {
-    drawSpectrogram(array);
-  }
+  drawSpectrogram(array);
 }
 
 // get the offContext from the canvas to draw on
@@ -112,16 +108,14 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var spectIndex = 0;
 function drawSpectrogram(array) {
+  const height = analyser.frequencyBinCount;
   // iterate over the elements from the array
   for (var i = 0; i < array.length; i++) {
     // draw each pixel with the specific color
     // TODO: average values so that height is only 256?
     var value = array[i];
     ctx.fillStyle = hot.getColor(value).hex();
-    ctx.fillRect(spectIndex, 512 - i, 1, 1);
+    ctx.fillRect(spectIndex, height - i, 1, 1);
   }
-
-  // draw the copied image
-  ctx.drawImage(canvas, 0, 0, 800, 512, 0, 0, 800, 512);
   spectIndex = spectIndex + 1;
 }
