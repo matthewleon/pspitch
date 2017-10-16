@@ -32,7 +32,7 @@ function setupAudio(buffer) {
   offContext = new OfflineAudioContext(
     buffer.numberOfChannels, buffer.length, buffer.sampleRate);
   // setup a javascript node
-  javascriptNode = offContext.createScriptProcessor(2048, 1, 1);
+  javascriptNode = offContext.createScriptProcessor(1024, 1, 1);
   // connect to destination, else it isn't called
   javascriptNode.connect(offContext.destination);
   javascriptNode.onaudioprocess = onAudioProcess;
@@ -51,6 +51,10 @@ function setupAudio(buffer) {
   //sourceNode.connect(offContext.destination);
 }
 
+function setupViz(buffer) {
+  canvas.width = Math.ceil(buffer.length / javascriptNode.bufferSize);
+}
+
 // load the specified sound
 function loadSound(url) {
   var request = new XMLHttpRequest();
@@ -66,6 +70,7 @@ function loadSound(url) {
       console.log('decoded audio data');
       console.info(buffer);
       setupAudio(buffer);
+      setupViz(buffer);
       playSound(buffer);
     }, onError);
   }
@@ -110,6 +115,7 @@ function drawSpectrogram(array) {
   // iterate over the elements from the array
   for (var i = 0; i < array.length; i++) {
     // draw each pixel with the specific color
+    // TODO: average values so that height is only 256?
     var value = array[i];
     ctx.fillStyle = hot.getColor(value).hex();
     ctx.fillRect(spectIndex, 512 - i, 1, 1);
