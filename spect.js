@@ -112,10 +112,7 @@ var ctx = canvas.getContext("2d");
 var spectIndex = 0;
 function drawSpectrogram(array) {
   const height = analyser.frequencyBinCount;
-  // iterate over the elements from the array
   for (var i = 0; i < array.length; i++) {
-    // draw each pixel with the specific color
-    // TODO: average values so that height is only 256?
     const value = array[i];
     ctx.fillStyle = hot.getColor(value).hex();
     ctx.fillRect(spectIndex, height - i, 1, 1);
