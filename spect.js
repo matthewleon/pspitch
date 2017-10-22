@@ -85,8 +85,8 @@ function playSound(buffer) {
   offContext.startRendering().then(function(renderedBuffer) {
     console.log('Rendering completed successfully. Performing HFC.');
     const hfcThreshold = threshold(hfcArray);
-    renderHfc(hfcArray);
-    console.info(threshold(hfcArray));
+    renderGraph(hfcArray, document.getElementById('hfc-canvas'));
+    renderGraph(threshold(hfcArray), document.getElementById('threshold-canvas'));
   });
 }
 
@@ -140,7 +140,7 @@ function threshold(arr, windowSize = 2, d = 0, l = 1) {
     var val = 0;
     for (var j = i - windowSize; j < i + windowSize; j++)
       val = val + arr[j];
-    thresholdArr[i] = d + l * val / windowSize;
+    thresholdArr[i] = d + l * val / (windowSize * 2 + 1);
   }
 
   for (var i = arr.length - windowSize; i < arr.length; i++)
@@ -149,15 +149,14 @@ function threshold(arr, windowSize = 2, d = 0, l = 1) {
   return thresholdArr;
 }
 
-function renderHfc(arr) {
-  const hfcCanvas = document.getElementById('hfc-canvas');
-  const hfcCtx = hfcCanvas.getContext('2d');
-  hfcCanvas.width = arr.length;
-  const height = hfcCanvas.height;
+function renderGraph(arr, canvasElem) {
+  const canvasCtx = canvasElem.getContext('2d');
+  canvasElem.width = arr.length;
+  const height = canvasElem.height;
   const maxVal = Math.max(...arr);
-  hfcCtx.fillStyle = '#fff';
+  canvasCtx.fillStyle = '#fff';
   for (var i = 0; i < arr.length; i++) {
     const value = Math.round((arr[i] / maxVal) * height);
-    hfcCtx.fillRect(i, height - value, 1, 1);
+    canvasCtx.fillRect(i, height - value, 1, 1);
   }
 }
