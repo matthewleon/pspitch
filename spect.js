@@ -14,6 +14,8 @@ var sourceNode;
 var analyser;
 var javascriptNode;
 
+var hfcArray = [];
+
 // used for color distribution
 var hot = new chroma.ColorScale({
   colors:['#000000', '#ff0000', '#ffff00', '#ffffff'],
@@ -81,7 +83,8 @@ function playSound(buffer) {
   sourceNode.buffer = buffer;
   sourceNode.start(0);
   offContext.startRendering().then(function(renderedBuffer) {
-        console.log('Rendering completed successfully');
+    console.log('Rendering completed successfully');
+    renderHfc(hfcArray);
   });
 }
 
@@ -100,7 +103,7 @@ function onAudioProcess() {
 
   // draw the spectrogram
   drawSpectrogram(array);
-  console.log(getHfc(array));
+  hfcArray.push(getHfc(array));
 }
 
 // get the offContext from the canvas to draw on
@@ -113,7 +116,7 @@ function drawSpectrogram(array) {
   for (var i = 0; i < array.length; i++) {
     // draw each pixel with the specific color
     // TODO: average values so that height is only 256?
-    var value = array[i];
+    const value = array[i];
     ctx.fillStyle = hot.getColor(value).hex();
     ctx.fillRect(spectIndex, height - i, 1, 1);
   }
@@ -122,4 +125,17 @@ function drawSpectrogram(array) {
 
 function getHfc(arr) {
   return arr.reduce((accum, v, i) => accum + v * i, 0);
+}
+
+function renderHfc(arr) {
+  const hfcCanvas = document.getElementById('hfc-canvas');
+  const hfcCtx = hfcCanvas.getContext('2d');
+  hfcCanvas.width = arr.length;
+  const height = hfcCanvas.height;
+  const maxVal = Math.max(...arr);
+  hfcCtx.fillStyle = '#fff';
+  for (var i = 0; i < arr.length; i++) {
+    const value = Math.round((arr[i] / maxVal) * height);
+    hfcCtx.fillRect(i, height - value, 1, 1);
+  }
 }
