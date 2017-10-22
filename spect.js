@@ -83,8 +83,10 @@ function playSound(buffer) {
   sourceNode.buffer = buffer;
   sourceNode.start(0);
   offContext.startRendering().then(function(renderedBuffer) {
-    console.log('Rendering completed successfully');
+    console.log('Rendering completed successfully. Performing HFC.');
+    const hfcThreshold = threshold(hfcArray);
     renderHfc(hfcArray);
+    console.info(threshold(hfcArray));
   });
 }
 
@@ -122,6 +124,29 @@ function drawSpectrogram(array) {
 
 function getHfc(arr) {
   return arr.reduce((accum, v, i) => accum + v * i, 0);
+}
+
+// TODO: check param sizes
+function threshold(arr, windowSize = 2, d = 0, l = 1) {
+  console.log('thresholding');
+  console.log(arr);
+  const thresholdArr = new Array(arr.length);
+  const maxVal = Math.max(...arr);
+
+  for (var i = 0; i < windowSize; i++)
+    thresholdArr[i] = maxVal;
+
+  for (var i = windowSize; i < arr.length - windowSize; i++) {
+    var val = 0;
+    for (var j = i - windowSize; j < i + windowSize; j++)
+      val = val + arr[j];
+    thresholdArr[i] = d + l * val / windowSize;
+  }
+
+  for (var i = arr.length - windowSize; i < arr.length; i++)
+    thresholdArr[i] = maxVal;
+
+  return thresholdArr;
 }
 
 function renderHfc(arr) {
