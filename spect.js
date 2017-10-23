@@ -84,9 +84,13 @@ function playSound(buffer) {
   sourceNode.start(0);
   offContext.startRendering().then(function(renderedBuffer) {
     console.log('Rendering completed successfully. Performing HFC.');
-    const hfcThreshold = threshold(hfcArray);
     renderGraph(hfcArray, document.getElementById('hfc-canvas'));
-    renderGraph(threshold(hfcArray), document.getElementById('threshold-canvas'));
+    const threshArr = threshold(hfcArray);
+    renderGraph(threshArr, document.getElementById('threshold-canvas'));
+    const aboveThreshArr = aboveThreshold(threshArr, hfcArray);
+    renderGraph(aboveThreshArr, document.getElementById('hfc-threshold-canvas'));
+    const maxima = localMaxima(aboveThreshArr);
+    console.log(maxima);
   });
 }
 
@@ -149,6 +153,14 @@ function threshold(arr, windowSize = 2, d = 0, l = 1) {
   return thresholdArr;
 }
 
+function localMaxima(arr) {
+  maxima = [];
+  for (var i = 1; i < arr.length - 1; i++)
+    if ((arr[i] > arr[i-1]) && (arr[i] > arr[i + 1]))
+      maxima.push(i);
+  return maxima
+}
+
 function renderGraph(arr, canvasElem) {
   const canvasCtx = canvasElem.getContext('2d');
   canvasElem.width = arr.length;
@@ -160,3 +172,6 @@ function renderGraph(arr, canvasElem) {
     canvasCtx.fillRect(i, height - value, 1, 1);
   }
 }
+
+const aboveThreshold = (threshArr, arr) =>
+  arr.map((x, i) => (x > threshArr[i]) ? x : 0);
