@@ -6,6 +6,8 @@ if (! window.AudioContext) {
   window.AudioContext = window.webkitAudioContext;
 }
 
+const samplesPerHfc = 1024;
+
 var context = new AudioContext();
 var offContext; // declare size once we know how big it should be
 
@@ -31,7 +33,7 @@ function setupAudio(buffer) {
   offContext = new OfflineAudioContext(
     buffer.numberOfChannels, buffer.length, buffer.sampleRate);
   // setup a javascript node
-  javascriptNode = offContext.createScriptProcessor(1024, 1, 1);
+  javascriptNode = offContext.createScriptProcessor(samplesPerHfc, 1, 1);
   // connect to destination, else it isn't called
   javascriptNode.connect(offContext.destination);
   javascriptNode.onaudioprocess = onAudioProcess;
@@ -136,7 +138,7 @@ function getHfc(arr) {
 }
 
 // TODO: check param sizes
-function threshold(arr, windowSize = 8, d = 0, l = 1.2) {
+function threshold(arr, windowSize = 8, d = 0, l = 1.3) {
   console.log('thresholding');
   console.log(arr);
   const thresholdArr = new Array(arr.length);
