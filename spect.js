@@ -39,8 +39,13 @@ function setupAudio(buffer) {
 
   // setup a analyzer
   analyser = offContext.createAnalyser();
-  analyser.smoothingTimeConstant = 0;
-  analyser.fftSize = 512;
+
+  // default 0.8 smoothing, blackman window
+  // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/smoothingTimeConstant
+  //analyser.smoothingTimeConstant = 0;
+  // default 2048
+  analyser.fftSize = 2048;
+  console.log(analyser.frequencyBinCount);
 
   // create a buffer source node
   sourceNode = offContext.createBufferSource();
@@ -131,7 +136,7 @@ function getHfc(arr) {
 }
 
 // TODO: check param sizes
-function threshold(arr, windowSize = 2, d = 0, l = 1) {
+function threshold(arr, windowSize = 8, d = 0, l = 1.2) {
   console.log('thresholding');
   console.log(arr);
   const thresholdArr = new Array(arr.length);
@@ -155,9 +160,8 @@ function threshold(arr, windowSize = 2, d = 0, l = 1) {
 
 function localMaxima(arr) {
   maxima = [];
-  for (var i = 1; i < arr.length - 1; i++)
-    if ((arr[i] > arr[i-1]) && (arr[i] > arr[i + 1]))
-      maxima.push(i);
+  for (var i = 0; i < arr.length - 1; i++)
+    if (arr[i] > arr[i + 1] && arr[i] > arr[i - 1]) maxima.push(i);
   return maxima
 }
 
