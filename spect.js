@@ -96,8 +96,15 @@ function playSound(buffer) {
     renderGraph(threshArr, document.getElementById('threshold-canvas'));
     const aboveThreshArr = aboveThreshold(threshArr, hfcArray);
     renderGraph(aboveThreshArr, document.getElementById('hfc-threshold-canvas'));
-    const maxima = localMaxima(aboveThreshArr);
-    console.log(maxima);
+    /*
+     * these are not really relevant
+     * const maxima = localMaxima(aboveThreshArr);
+     * console.log(maxima);
+     */
+    const mins = minima(aboveThreshArr);
+    console.log(mins);
+    const minTimes = mins.map(index => index * samplesPerHfc / buffer.sampleRate);
+    console.log(minTimes);
   });
 }
 
@@ -164,7 +171,16 @@ function localMaxima(arr) {
   maxima = [];
   for (var i = 0; i < arr.length - 1; i++)
     if (arr[i] > arr[i + 1] && arr[i] > arr[i - 1]) maxima.push(i);
-  return maxima
+  return maxima;
+}
+
+function minima(arr) {
+  minima = [];
+  for (var i = 0; i < arr.length - 1; i++)
+    if (arr[i - 1] == 0 && arr[i] > arr[i - 1] && arr[i] < arr[i + 1]) {
+      minima.push(i);
+    }
+  return minima;
 }
 
 function renderGraph(arr, canvasElem) {
