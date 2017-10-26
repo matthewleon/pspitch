@@ -57,11 +57,6 @@ function setupAudio(buffer) {
   //sourceNode.connect(offContext.destination);
 }
 
-function setupViz(buffer) {
-  canvas.width = Math.ceil(buffer.length / javascriptNode.bufferSize);
-  canvas.height = analyser.frequencyBinCount;
-}
-
 // load the specified sound
 function loadSound(url) {
   var request = new XMLHttpRequest();
@@ -77,7 +72,6 @@ function loadSound(url) {
       console.log('decoded audio data');
       console.info(buffer);
       setupAudio(buffer);
-      setupViz(buffer);
       playSound(buffer);
     }, onError);
   }
@@ -90,7 +84,7 @@ function playSound(buffer) {
   sourceNode.buffer = buffer;
   sourceNode.start(0);
   offContext.startRendering().then(function(renderedBuffer) {
-    console.log('Rendering completed successfully. Performing HFC.');
+    drawSpectrogram(array);
     renderGraph(hfcArray, document.getElementById('hfc-canvas'));
     const threshArr = threshold(hfcArray);
     renderGraph(threshArr, document.getElementById('threshold-canvas'));
@@ -116,28 +110,35 @@ function onError(e) {
 // when the javascript node is called
 // we use information from the analyzer node
 // to draw the volume
+const array = [];
 function onAudioProcess() {
   // get the average for the first channel
-  var array = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(array);
+  frameData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(frameData);
 
-  // draw the spectrogram
-  drawSpectrogram(array);
-  hfcArray.push(getHfc(array));
+  array.push(frameData);
+  hfcArray.push(getHfc(frameData));
 }
 
 // get the offContext from the canvas to draw on
-var canvas = document.getElementById("canvas");
-var ctx = canvas.getContext("2d");
-var spectIndex = 0;
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 function drawSpectrogram(array) {
-  const height = analyser.frequencyBinCount;
+  var height = 0;
+  for (var i = 0; i < array.length; i++)
+    for (var j = height; j < array[i].length; j++)
+      if (array[i][j] > 0) height = j;
+
+  canvas.width = array.length;
+  canvas.height = height;
+
   for (var i = 0; i < array.length; i++) {
-    const value = array[i];
-    ctx.fillStyle = hot.getColor(value).hex();
-    ctx.fillRect(spectIndex, height - i, 1, 1);
+    for (var j = 0; j < array[i].length; j++) {
+      const value = array[i][j];
+      ctx.fillStyle = hot.getColor(value).hex();
+      ctx.fillRect(i, height - j, 1, 1);
+    }
   }
-  spectIndex = spectIndex + 1;
 }
 
 function getHfc(arr) {
